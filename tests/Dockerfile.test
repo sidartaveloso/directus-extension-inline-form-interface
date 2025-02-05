@@ -1,31 +1,38 @@
-FROM directus/directus:latest
+FROM directus/directus:11.4.1
 
 USER root
 
-# Cria diretório de extensões se não existir
+# Instalar SQLite e Spatialite no Alpine Linux
+RUN apk add --no-cache sqlite sqlite-libs libspatialite && \
+    ln -s /usr/lib/mod_spatialite.so /usr/lib/libspatialite.so.7
+
+# Create the extensions directory if it doesn't exist
 RUN mkdir -p /directus/extensions/interfaces
 
-# Copia a extensão compilada
+# Copy the compiled extension
 COPY ./dist /directus/extensions/interfaces/inline-form-interface
 
-# Debug: Mostra o conteúdo do arquivo antes de copiar
-RUN echo "Conteúdo do schema antes da cópia:"
+# Copy the test schema
 COPY ./tests/seeds/test-schema.snapshot.json /directus/schema.json
 
-# Debug: Mostra o conteúdo depois de copiar
-RUN echo "Conteúdo do schema após a cópia:" && \
-    cat /directus/schema.json && \
-    echo "Permissões do arquivo:" && \
-    ls -la /directus/schema.json
+# Create the startup script using a multi-line string for better readability
+RUN echo '#!/bin/sh' > /directus/start.sh && \
+    echo 'export LD_LIBRARY_PATH=/usr/lib:$LD_LIBRARY_PATH' >> /directus/start.sh && \
+    echo 'echo "Bootstrapping Directus..."' >> /directus/start.sh && \
+    echo 'npx directus bootstrap' >> /directus/start.sh && \
+    echo 'echo "Applying schema..."' >> /directus/start.sh && \
+    echo 'npx directus schema apply /directus/schema.json --yes' >> /directus/start.sh && \
+    echo 'echo "Starting Directus..."' >> /directus/start.sh && \
+    echo 'npx directus start' >> /directus/start.sh
 
-# Ajusta as permissões
-RUN chown -R node:node /directus/extensions \
-    && chmod -R 755 /directus/extensions \
-    && chown node:node /directus/schema.json \
-    && chmod 644 /directus/schema.json
+# Set permissions
+RUN chmod +x /directus/start.sh && \
+    chown node:node /directus/start.sh && \
+    chown -R node:node /directus/extensions && \
+    chmod -R 755 /directus/extensions && \
+    chown node:node /directus/schema.json
 
 USER node
 
-# Define variáveis de ambiente para o schema
-ENV DIRECTUS_SCHEMA_FILE="/directus/schema.json"
-ENV DIRECTUS_SCHEMA_FORCE="true"
+# Use the full path for the CMD
+CMD ["/directus/start.sh"]

@@ -11,7 +11,7 @@ services:
       - .env
     environment:
       DIRECTUS_SCHEMA_FILE: "/directus/schema.json"
-      DIRECTUS_SCHEMA_FORCE: "true"  # Força a aplicação do schema
+      DIRECTUS_SCHEMA_FORCE: "true"
     ports:
       - "8055:8055"
     networks:
