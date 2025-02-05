@@ -1,13 +1,31 @@
 FROM directus/directus:latest
 
+USER root
+
+# Cria diretório de extensões se não existir
+RUN mkdir -p /directus/extensions/interfaces
+
 # Copia a extensão compilada
 COPY ./dist /directus/extensions/interfaces/inline-form-interface
 
-# Copia o schema de teste
+# Debug: Mostra o conteúdo do arquivo antes de copiar
+RUN echo "Conteúdo do schema antes da cópia:"
 COPY ./tests/seeds/test-schema.snapshot.json /directus/schema.json
 
-# Define variável para garantir que o Directus use o schema
-ENV DIRECTUS_SCHEMA_FILE="/directus/schema.json"
+# Debug: Mostra o conteúdo depois de copiar
+RUN echo "Conteúdo do schema após a cópia:" && \
+    cat /directus/schema.json && \
+    echo "Permissões do arquivo:" && \
+    ls -la /directus/schema.json
 
-# Garante as permissões corretas
-RUN chmod -R 777 /directus/extensions/interfaces
+# Ajusta as permissões
+RUN chown -R node:node /directus/extensions \
+    && chmod -R 755 /directus/extensions \
+    && chown node:node /directus/schema.json \
+    && chmod 644 /directus/schema.json
+
+USER node
+
+# Define variáveis de ambiente para o schema
+ENV DIRECTUS_SCHEMA_FILE="/directus/schema.json"
+ENV DIRECTUS_SCHEMA_FORCE="true"
