@@ -6,7 +6,7 @@ export function isAllowed(
 	collection: string,
 	action: Permission['action'],
 	value: Record<string, any> | null,
-	strict = false
+	strict = false,
 ): boolean {
 	const { usePermissionsStore, useUserStore } = useStores();
 	const permissionsStore = usePermissionsStore();

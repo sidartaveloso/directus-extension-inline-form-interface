@@ -26,13 +26,13 @@
 		"allowSyntheticDefaultImports": true,
 		"isolatedModules": true,
 		"rootDir": "./src",
+		"baseUrl": ".",
 		"paths": {
-			"@/*": [
-				"src/*"
-			]
+			"@/*": ["./src/*"]
 		}
 	},
 	"include": [
-		"./src/**/*.ts"
+		"./src/**/*.ts",
+		"./tests/**/*.ts"
 	]
 }

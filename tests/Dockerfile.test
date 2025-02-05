@@ -1,0 +1,13 @@
+FROM directus/directus:latest
+
+# Copia a extensão compilada
+COPY ./dist /directus/extensions/interfaces/inline-form-interface
+
+# Copia o schema de teste
+COPY ./tests/seeds/test-schema.snapshot.json /directus/schema.json
+
+# Define variável para garantir que o Directus use o schema
+ENV DIRECTUS_SCHEMA_FILE="/directus/schema.json"
+
+# Garante as permissões corretas
+RUN chmod -R 777 /directus/extensions/interfaces

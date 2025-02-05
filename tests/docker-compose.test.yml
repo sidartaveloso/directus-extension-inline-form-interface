@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json
+name: directus-extension-test
+version: '3.8'
+
+services:
+  directus-test:
+    build:
+      context: ..
+      dockerfile: tests/Dockerfile.test
+    env_file:
+      - .env
+    ports:
+      - "8055:8055"
+    networks:
+      - test-network
+
+networks:
+  test-network:
+    driver: bridge
